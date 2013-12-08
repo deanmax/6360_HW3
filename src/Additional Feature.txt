@@ -1,9 +1,9 @@
-* Each event has parameter check. If parameters don't meet requirement, pop out window will prompt.
-
-* In 'Check Available' Tab, additional 'Title' and 'Author Name' will be displayed for better visibility.
+* Each event has parameter check. If parameters don't meet requirement, pop up window will prompt.
 
 * In 'Check Out' Tab, after check out successfully completes, it will display user check-out dashboard.
 
 * In 'Check In' Tab, if no parameters are provided and 'Search' buttom is hit, all book check-out status will be displayed.
 
-* 
+* In 'Borrower Mgmt' Tab, add 'Delete borrower' function which can delete multiple borrowers by selecting from table.
+
+* Add a 'Borrower Count' Tab that finds all users who has booked given number of books.

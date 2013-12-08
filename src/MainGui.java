@@ -14,10 +14,12 @@ public class MainGui{
 	JPanel panel2;
 	JPanel panel3;
 	JPanel panel4;
+	JPanel panel5;
 	JTable table1;
 	JTable table2;
 	JTable table3;
 	JTable table4;
+	JTable table5;
 	JTextField text1_1;
 	JTextField text1_2;
 	JTextField text1_3;
@@ -31,14 +33,17 @@ public class MainGui{
 	JTextField text4_2;
 	JTextField text4_3;
 	JTextField text4_4;
+	JTextField text5;
 	TableModel tabModel_1;
 	TableModel tabModel_2;
 	TableModel tabModel_3;
 	TableModel tabModel_4;
+	TableModel tabModel_5;
 	JScrollPane scrollPane1;
 	JScrollPane scrollPane2;
 	JScrollPane scrollPane3;
 	JScrollPane scrollPane4;
+	JScrollPane scrollPane5;
 	
 	public static void main(String[] args){
 		MainGui gui = new MainGui();
@@ -52,6 +57,7 @@ public class MainGui{
 		panel2 = new JPanel();
 		panel3 = new JPanel();
 		panel4 = new JPanel();
+		panel5 = new JPanel();
 		
 		
 		String[] headers_1 = {"book_id", "title", "author name", "branch_id",
@@ -60,6 +66,8 @@ public class MainGui{
 		String[] headers_3 = {"book_id", "branch_id", "card_no",
 				"fname", "lname", "Date Out", "Due Date"};
 		String[] headers_4 = {"card_no", "First Name", "Last Name",
+				"Address", "Phone"};
+		String[] headers_5 = {"card_no", "Book borrowed", "First Name", "Last Name",
 				"Address", "Phone"};
 		
 		table1 = new JTable(new Object[1100][6], headers_1);
@@ -75,6 +83,9 @@ public class MainGui{
 		table4 = new JTable(new Object[100][5], headers_4);
 		table4.setAutoCreateRowSorter(true);
 		tabModel_4 = table4.getModel();
+		table5 = new JTable(new Object[100][6], headers_5);
+		table5.setAutoCreateRowSorter(true);
+		tabModel_5 = table5.getModel();
 		
 		
 		//=====================
@@ -178,8 +189,12 @@ public class MainGui{
 		text4_3 = new JTextField(15);
 		text4_4 = new JTextField(8);
 		
-		JButton button4 = new JButton("Add");
-		button4.addActionListener(new Button_4_Listener());
+		JButton button4_1 = new JButton("Add");
+		button4_1.addActionListener(new Button_4_1_Listener());
+		JButton button4_2 = new JButton("Search All");
+		button4_2.addActionListener(new Button_4_2_Listener());
+		JButton button4_3 = new JButton("Delete");
+		button4_3.addActionListener(new Button_4_3_Listener());
 		
 		scrollPane4 = new JScrollPane(table4);
 		scrollPane4.setPreferredSize(new Dimension(600, 450));
@@ -193,20 +208,44 @@ public class MainGui{
 		panel4.add(text4_3);
 		panel4.add(label4_4);
 		panel4.add(text4_4);
-		panel4.add(button4);
+		panel4.add(button4_1);
+		panel4.add(button4_2);
 		panel4.add(scrollPane4);
+		panel4.add(button4_3);
 		// End Tab 4 components
 		
+		//=====================
+		// Components of Tab 5
+		//=====================
+		JLabel label5_1 = new JLabel("List borrowers who has booked at least");
+		JLabel label5_2 = new JLabel("book(s)");
+		
+		text5 = new JTextField(1);
+		
+		JButton button5 = new JButton("Find");
+		button5.addActionListener(new Button_5_Listener());
+		
+		scrollPane5 = new JScrollPane(table5);
+		scrollPane5.setPreferredSize(new Dimension(650, 450));
+		table5.setFillsViewportHeight(true);
+		
+		panel5.add(label5_1);
+		panel5.add(text5);
+		panel5.add(label5_2);
+		panel5.add(button5);
+		panel5.add(scrollPane5);
+		// End Tab 5 components
 		
 		tabbedPane.addTab("Check Availability", panel1);
 		tabbedPane.addTab("Check Out", panel2);
 		tabbedPane.addTab("Check In", panel3);
-		tabbedPane.addTab("Add Borrower", panel4);
+		tabbedPane.addTab("Borrower Mgmt", panel4);
+		tabbedPane.addTab("Borrower Count", panel5);
 		
 		// Set frame appearance
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().add(tabbedPane);
-		frame.setSize(900,600);
+		frame.setSize(980,600);
 		frame.setVisible(true);
 	}
 	
@@ -578,17 +617,24 @@ public class MainGui{
 			catch(SQLException ex) {
 				JOptionPane.showMessageDialog(panel3, ex.getMessage(), 
 					"Error in connection", JOptionPane.ERROR_MESSAGE);
-			}	
+			}
 		}
 	}
 	
-	class Button_4_Listener implements ActionListener {
+	class Button_4_1_Listener implements ActionListener {
 		public void actionPerformed(ActionEvent event) {
 			String t1 = text4_1.getText(); // fname
 			String t2 = text4_2.getText(); // lname
 			String t3 = text4_3.getText(); // address
 			String t4 = text4_4.getText(); // phone
 			
+			// Empty stale data in table
+			for (int row = 0; row < tabModel_4.getRowCount(); row++) {
+				for( int i = 0; i < 5; i++) {
+					tabModel_4.setValueAt(null, row, i);
+				}
+			}
+						
 			// All names and address fields can't be empty
 			if ( t1.length() == 0 || t2.length() == 0 || t3.length() == 0 ) {
 				JOptionPane.showMessageDialog(panel4, "Either one of " +
@@ -624,6 +670,19 @@ public class MainGui{
 				ResultSet rs = stmt.executeQuery(sql);
 				if (rs.next() == true) {
 					JOptionPane.showMessageDialog(panel4, "Borrower already exists!");
+					// Displayg user
+					card_no = rs.getInt("card_no");
+					fname = rs.getString("fname");
+					lname = rs.getString("lname");
+					addr = rs.getString("address");
+					phone = rs.getString("phone");
+
+					tabModel_4.setValueAt(card_no, linect, 0);
+					tabModel_4.setValueAt(fname, linect, 1);
+					tabModel_4.setValueAt(lname, linect, 2);
+					tabModel_4.setValueAt(addr, linect, 3);
+					tabModel_4.setValueAt(phone, linect, 4);
+					
 					rs.close();
 					conn.close();
 					return;
@@ -672,6 +731,166 @@ public class MainGui{
 			catch(SQLException ex) {
 				JOptionPane.showMessageDialog(panel4, ex.getMessage(), 
 						"Error in execution", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+	}
+	
+	class Button_4_2_Listener implements ActionListener {
+		public void actionPerformed(ActionEvent event) {
+			// Empty stale data in table
+			for (int row = 0; row < tabModel_4.getRowCount(); row++) {
+				for( int i = 0; i < 5; i++) {
+					tabModel_4.setValueAt(null, row, i);
+				}
+			}
+			
+			int card_no; // card_no
+			String fname, lname, addr, phone;
+			int linect = 0;
+			
+			// Prepare connection handler
+			try {
+				// Create a connection to the local MySQL server
+				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", db_user, db_pswd);
+				Statement stmt = conn.createStatement();
+				stmt.executeQuery("use Library;");
+				String sql = "SELECT card_no, fname, lname, address, phone FROM borrower";
+				ResultSet rs = stmt.executeQuery(sql);
+				// Iterate through the result set.
+				while (rs.next()) {
+					card_no = rs.getInt("card_no");
+					fname = rs.getString("fname");
+					lname = rs.getString("lname");
+					addr = rs.getString("address");
+					phone = rs.getString("phone");
+
+					tabModel_4.setValueAt(card_no, linect, 0);
+					tabModel_4.setValueAt(fname, linect, 1);
+					tabModel_4.setValueAt(lname, linect, 2);
+					tabModel_4.setValueAt(addr, linect, 3);
+					tabModel_4.setValueAt(phone, linect, 4);
+					linect++;
+				}
+				
+				rs.close();
+				conn.close();
+			}
+			catch(SQLException ex) {
+				JOptionPane.showMessageDialog(panel4, ex.getMessage(), 
+						"Error in connection", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+		}
+	}
+	
+	class Button_4_3_Listener implements ActionListener {
+		public void actionPerformed(ActionEvent event) {
+			int card_no; // card_no
+			String sql;
+			int[] highlighted = table4.getSelectedRows();
+			
+			try {
+				// Create a connection to the local MySQL server
+				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", db_user, db_pswd);
+		
+				// Create a SQL statement object and execute the query.
+				Statement stmt = conn.createStatement();
+				stmt.executeQuery("use Library;");
+				
+				for(int row: highlighted ) {
+					if ( tabModel_4.getValueAt(row, 0) != null) {
+						card_no = (int) tabModel_4.getValueAt(row, 0);
+						sql = "DELETE FROM borrower WHERE card_no = '" + card_no + "'";
+						stmt.executeUpdate(sql);
+					}
+				}
+				JOptionPane.showMessageDialog(panel4, "Borrower deleted!");
+				conn.close();
+			}
+			catch(SQLException ex) {
+				JOptionPane.showMessageDialog(panel4, ex.getMessage(), 
+					"Error in connection", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+	}
+	
+	class Button_5_Listener implements ActionListener {
+		public void actionPerformed(ActionEvent event) {
+			String t = text5.getText(); // book borrowed
+			
+			// book quantity can't be empty
+			if ( t.length() == 0 ) {
+				JOptionPane.showMessageDialog(panel5, "Book quantity can't " +
+					"be empty!");
+				return;
+			}
+			int t1 = Integer.parseInt(t); // book borrowed
+			
+			// Empty stale data in table
+			for (int row = 0; row < tabModel_5.getRowCount(); row++) {
+				for( int i = 0; i < 6; i++) {
+					tabModel_5.setValueAt(null, row, i);
+				}
+			}
+						
+
+			if ( t1 <= 0 ) {
+				JOptionPane.showMessageDialog(panel5, "Book quantity should " +
+					"be greater than 0!");
+				return;
+			}
+			
+			Connection conn = null;
+			Statement stmt = null;
+			String sql = "SELECT card_no, count(*) as book_borrowered, fname, lname, address, phone" +
+					" FROM borrower NATURAL JOIN book_loans" +
+					" GROUP BY card_no" +
+					" HAVING book_borrowered >= " + t1;
+			int card_no, book_borrow;
+			String fname, lname, addr, phone;
+			int linect = 0;
+			
+			// Prepare connection handler
+			try {
+				// Create a connection to the local MySQL server
+				conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", db_user, db_pswd);
+				stmt = conn.createStatement();
+				stmt.executeQuery("use Library;");
+				ResultSet rs = stmt.executeQuery(sql);
+
+				// If result set empty
+				if (rs.next() == false) {
+					JOptionPane.showMessageDialog(panel5, "No result found!");
+					rs.close();
+					conn.close();
+					return;
+				}
+				
+				// Iterate through the result set.
+				do {
+					card_no = rs.getInt("card_no");
+					book_borrow = rs.getInt("book_borrowered");
+					fname = rs.getString("fname");
+					lname = rs.getString("lname");
+					addr = rs.getString("address");
+					phone = rs.getString("phone");
+
+					tabModel_5.setValueAt(card_no, linect, 0);
+					tabModel_5.setValueAt(book_borrow, linect, 1);
+					tabModel_5.setValueAt(fname, linect, 2);
+					tabModel_5.setValueAt(lname, linect, 3);
+					tabModel_5.setValueAt(addr, linect, 4);
+					tabModel_5.setValueAt(phone, linect, 5);
+					linect++;
+				} while (rs.next());
+				// End while
+
+				rs.close();
+				conn.close();
+			}
+			catch(SQLException ex) {
+				JOptionPane.showMessageDialog(panel5, ex.getMessage(), 
+						"Error in connection", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 	}
