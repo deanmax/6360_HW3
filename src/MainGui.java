@@ -54,22 +54,26 @@ public class MainGui{
 		panel4 = new JPanel();
 		
 		
-		String[] headers_1 = {"book_id", "branch_id",
+		String[] headers_1 = {"book_id", "title", "author name", "branch_id",
 				"total number", "available number"};
-		String[] headers_2 = {"book_id", "branch_id", "Date Out", "Due Date"};
+		String[] headers_2 = {"card_no", "book_id", "branch_id", "Date Out", "Due Date"};
 		String[] headers_3 = {"book_id", "branch_id", "card_no",
 				"fname", "lname", "Date Out", "Due Date"};
 		String[] headers_4 = {"card_no", "First Name", "Last Name",
 				"Address", "Phone"};
 		
-		table1 = new JTable(new Object[1100][4], headers_1);
+		table1 = new JTable(new Object[1100][6], headers_1);
+		table1.setAutoCreateRowSorter(true);
 		tabModel_1 = table1.getModel();
 		//table1.setLocation(0, 100);
-		table2 = new JTable(new Object[5][4], headers_2);
+		table2 = new JTable(new Object[5][5], headers_2);
+		table2.setAutoCreateRowSorter(true);
 		tabModel_2 = table2.getModel();
 		table3 = new JTable(new Object[100][7], headers_3);
+		table3.setAutoCreateRowSorter(true);
 		tabModel_3 = table3.getModel();
 		table4 = new JTable(new Object[100][5], headers_4);
+		table4.setAutoCreateRowSorter(true);
 		tabModel_4 = table4.getModel();
 		
 		
@@ -88,6 +92,7 @@ public class MainGui{
 		button1.addActionListener(new Button_1_Listener());
 		
 		scrollPane1 = new JScrollPane(table1);
+		scrollPane1.setPreferredSize(new Dimension(700, 400));
 		table1.setFillsViewportHeight(true);
 		
 		panel1.add(label1_1);
@@ -211,14 +216,14 @@ public class MainGui{
 			String t2 = text1_2.getText(); // title
 			String t3 = text1_3.getText(); // author_name
 			
-			// Empty stale date in table
+			// Empty stale data in table
 			for (int row = 0; row < tabModel_1.getRowCount(); row++) {
-				for( int i = 0; i < 4; i++) {
+				for( int i = 0; i < 6; i++) {
 					tabModel_1.setValueAt(null, row, i);
 				}
 			}
 			
-			String select_sql = "SELECT distinct a.book_id, a.branch_id, a.no_of_copies," +
+			String select_sql = "SELECT distinct a.book_id, b.title, c.author_name, a.branch_id, a.no_of_copies," +
 								" (select count(*) from book_loans d where d.branch_id = a.branch_id " +
 								"and d.book_id = a.book_id)" + " as no_loaned ";
 			//String from_sql = " FROM book_copies natural join book natural join book_authors as a";
@@ -250,7 +255,7 @@ public class MainGui{
 			
 			
 			Connection conn = null;
-			String book_id, branch_id;
+			String book_id, title, author_name, branch_id;
 			int no_total, no_loaned, no_avail;
 			int linect = 0;
 			try {
@@ -272,15 +277,19 @@ public class MainGui{
 				// Iterate through the result set.
 				do {
 					book_id = rs.getString("book_id");
+					title = rs.getString("title");
+					author_name = rs.getString("author_name");
 					branch_id = rs.getString("branch_id");
 					no_total = rs.getInt("no_of_copies");
 					no_loaned = rs.getInt("no_loaned");
 					no_avail = no_total - no_loaned;
 
 					tabModel_1.setValueAt(book_id, linect, 0);
-					tabModel_1.setValueAt(branch_id, linect, 1);
-					tabModel_1.setValueAt(no_total, linect, 2);
-					tabModel_1.setValueAt(no_avail, linect, 3);
+					tabModel_1.setValueAt(title, linect, 1);
+					tabModel_1.setValueAt(author_name, linect, 2);
+					tabModel_1.setValueAt(branch_id, linect, 3);
+					tabModel_1.setValueAt(no_total, linect, 4);
+					tabModel_1.setValueAt(no_avail, linect, 5);
 					linect++;
 				} while (rs.next());
 				// End while
@@ -302,6 +311,13 @@ public class MainGui{
 			String t2 = text2_2.getText(); // branch_id
 			String t3 = text2_3.getText(); // card_no
 			scrollPane2.setVisible(false); // Restore scrollpane to be invisible
+			
+			// Empty stale data in table
+			for (int row = 0; row < tabModel_2.getRowCount(); row++) {
+				for( int i = 0; i < 5; i++) {
+					tabModel_2.setValueAt(null, row, i);
+				}
+			}
 			
 			// All names and address fields can't be empty
 			if ( t1.length() == 0 || t2.length() == 0 || t3.length() == 0 ) {
@@ -357,19 +373,21 @@ public class MainGui{
 				}
 				
 				// Check that a user can't have more than 3 book loaned
-				sql = "SELECT book_id, branch_id, date_out, due_date" +
+				sql = "SELECT card_no, book_id, branch_id, date_out, due_date" +
 						" FROM book_loans WHERE card_no = '" + t3 + "'";
 				rs = stmt.executeQuery(sql);
 				while (rs.next()) {
-					String bkid = rs.getString(1); // book_id
-					String brchid = rs.getString(2); // branch id
-					String dout = rs.getString(3); // Date out
-					String ddate = rs.getString(4); // Due date
+					String cno = rs.getString(1); // card_no
+					String bkid = rs.getString(2); // book_id
+					String brchid = rs.getString(3); // branch id
+					String dout = rs.getString(4); // Date out
+					String ddate = rs.getString(5); // Due date
 					
-					tabModel_2.setValueAt(bkid, linect, 0);
-					tabModel_2.setValueAt(brchid, linect, 1);
-					tabModel_2.setValueAt(dout, linect, 2);
-					tabModel_2.setValueAt(ddate, linect, 3);
+					tabModel_2.setValueAt(cno, linect, 0);
+					tabModel_2.setValueAt(bkid, linect, 1);
+					tabModel_2.setValueAt(brchid, linect, 2);
+					tabModel_2.setValueAt(dout, linect, 3);
+					tabModel_2.setValueAt(ddate, linect, 4);
 					linect++;
 				}
 				if (linect >= 3) {
@@ -410,7 +428,7 @@ public class MainGui{
 				JOptionPane.showMessageDialog(panel2, "Check Out Complete!");
 				
 				// Display user check out information
-				sql = "SELECT book_id, branch_id, date_out, due_date" +
+				sql = "SELECT card_no, book_id, branch_id, date_out, due_date" +
 						" FROM book_loans WHERE card_no = '" + t3 + "'";
 				ResultSet rs = stmt.executeQuery(sql);
 				scrollPane2.setVisible(true);
@@ -418,15 +436,17 @@ public class MainGui{
 				frame.getContentPane().repaint();
 				linect = 0;
 				while (rs.next()) {
-					String bkid = rs.getString(1); // book_id
-					String brchid = rs.getString(2); // branch id
-					String dout = rs.getString(3); // Date out
-					String ddate = rs.getString(4); // Due date
+					String cno = rs.getString(1); // card_no
+					String bkid = rs.getString(2); // book_id
+					String brchid = rs.getString(3); // branch id
+					String dout = rs.getString(4); // Date out
+					String ddate = rs.getString(5); // Due date
 					
-					tabModel_2.setValueAt(bkid, linect, 0);
-					tabModel_2.setValueAt(brchid, linect, 1);
-					tabModel_2.setValueAt(dout, linect, 2);
-					tabModel_2.setValueAt(ddate, linect, 3);
+					tabModel_2.setValueAt(cno, linect, 0);
+					tabModel_2.setValueAt(bkid, linect, 1);
+					tabModel_2.setValueAt(brchid, linect, 2);
+					tabModel_2.setValueAt(dout, linect, 3);
+					tabModel_2.setValueAt(ddate, linect, 4);
 					linect++;
 				}
 			}
@@ -443,25 +463,23 @@ public class MainGui{
 			String t2 = text3_2.getText(); // card_no
 			String t3 = text3_3.getText(); // borrower
 			
-			// Empty stale date in table
+			// Empty stale data in table
 			for (int row = 0; row < tabModel_3.getRowCount(); row++) {
 				for( int i = 0; i < 7; i++) {
 					tabModel_3.setValueAt(null, row, i);
 				}
 			}
 			
-			// Fields can't all be empty
-			if ( t1.length() == 0 && t2.length() == 0 && t3.length() == 0 ) {
-				JOptionPane.showMessageDialog(panel3, "No value to search for!");
-				return;
-			}
 			
 			String select_sql = "SELECT book_id, branch_id, card_no," +
 					" fname, lname, date_out, due_date ";
 			String from_sql = " FROM book_loans NATURAL JOIN borrower ";
 			String where_sql = " WHERE ";
 
-			if ( t1.length() != 0 && t2.length() != 0 ) {
+			if ( t1.length() == 0 && t2.length() == 0 && t3.length() == 0 ) {
+				// If fields are all empty, display all book check-out status
+				where_sql = "";
+			} else if ( t1.length() != 0 && t2.length() != 0 ) {
 				where_sql += "book_id = '" + t1 + "' and card_no = '" + t2 + "'";
 			} else if ( t1.length() != 0 && t3.length() != 0 ) {
 				where_sql += "book_id = '" + t1 + "' and fname like '%" + t3 + "%' or lname like '%" + t3 + "%'";
