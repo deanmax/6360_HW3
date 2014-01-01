@@ -7,3 +7,4 @@
 * In 'Borrower Mgmt' Tab, add 'Delete borrower' function which can delete multiple borrowers by selecting from table.
 
 * Add a 'Borrower Count' Tab that finds all users who has booked given number of books.
+	* parameter should be greater than 0
